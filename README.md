@@ -36,13 +36,13 @@ Error = guess - data
 Cost = Error^2
 
 dCost
------= 2*Error*Error` = 2*Error*( guess-data )` = 2*Error*( act( mx+b ) - data )` = 2*Error*( act(mx+b)` - data` )
+-----= 2*Error*Error' = 2*Error*( guess-data )' = 2*Error*( act( mx+b ) - data )' = 2*Error*( act(mx+b)' - data' )
  dm
 
 dCost
------= 2*Error*( act( mx+b ) * ( 1 - act( mx+b )) * ( mx+b )` - 0 )
+-----= 2*Error*( act( mx+b ) * ( 1 - act( mx+b )) * ( mx+b )' - 0 )
  dm
 
 dCost
------= 2*Error*( act( mx+b ) * ( 1 - act( mx+b )) * mx` + b` - 0 ) = 2*Error*( act( mx+b ) * ( 1 - act( mx+b )) * x + 0 - 0 )
+-----= 2*Error*( act( mx+b ) * ( 1 - act( mx+b )) * mx' + b' - 0 ) = 2*Error*( act( mx+b ) * ( 1 - act( mx+b )) * x + 0 - 0 )
  dm
