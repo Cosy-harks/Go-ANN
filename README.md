@@ -6,16 +6,19 @@ Each layer gets a type of activation function and a number of nodes
 
 How To Use
 - Make a main.go
-- import wrk "github.com/Go-ANN/BuilderTrainer"
 
-- var x = wrk.Network{}
-- x.AddLayer(wrk.[activation function], #) // input data. Activation function does not affect network on input layer
-- x.AddLayer(wrk.[activation function], #) // hidden or final layer
-- x.ConnectLayers()                        // puts in all the weight data between layers
-- x.PutData([input])                       // fills the input layer with your data
-- x.Propagation()                          // Maths the data through the network
-- x.BackPropagation([expected])            // corrects the network based on expected values
-- x.GetFinal()                             // returns the final layer data from the network
+- import ("github.com/Go-ANN"     //goann.[Exported names]
+          "github.com/Go-ANN/act" //act.[Exported names]
+)
+
+- var x = goann.Network{}
+- x.AddLayer(act.[activation function], +#) // input data. Activation function does not affect network on input layer
+- x.AddLayer(act.[activation function], +#) // hidden or final layer
+- x.ConnectLayers()                         // puts in all the weight data between layers
+- x.PutData([input])                        // fills the input layer with your data
+- x.Propagation()                           // Maths the data through the network
+- x.BackPropagation([expected])             // corrects the network based on expected values
+- x.GetFinal()                              // returns the final layer data from the network
 
 Another network in Development
 
