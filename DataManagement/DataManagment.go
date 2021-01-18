@@ -67,7 +67,7 @@ func (db *DataBuilder) AddxTrainValues(xTrain []float64) error {
 // AddyTrainValues will add the parameter yTrain values to the db.ytrain slice
 // if db.numOutput is set and the length of yTrain mod db.numOutput is 0
 func (db *DataBuilder) AddyTrainValues(yTrain []float64) error {
-	if db.numOutput != 0 {
+	if db.numOutput == 0 {
 		return errors.New("Use SetNumOutput(int) before using this function")
 	}
 	if len(yTrain)%int(db.numOutput) != 0 {
@@ -86,7 +86,7 @@ func (db *DataBuilder) AddyTrainValues(yTrain []float64) error {
 // AddxTestValues will add the parameter xTest values to the db.xtest slice
 // if db.numInput is set and the length of xTest mod db.numInput is 0
 func (db *DataBuilder) AddxTestValues(xTest []float64) error {
-	if db.numInput != 0 {
+	if db.numInput == 0 {
 		return errors.New("Use SetNumInput(int) before using this function")
 	}
 	if len(xTest)%int(db.numInput) != 0 {
@@ -131,16 +131,18 @@ func (db *DataBuilder) Build() Data {
 // iterations - length of training loop
 // batch - has yet to work
 // ann - the provided Network
-func (d Data) Train(iterations uint, ann goann.Network) goann.Network {
-	for ind, c := 0, 0; c < int(iterations); c++ {
-		index1, index2 := (ind*int(d.numInput))%len(d.xtrain), (ind*int(d.numInput)+int(d.numInput))%len(d.xtrain)
-		outdex1, outdex2 := (ind*int(d.numOutput))%len(d.ytrain), (ind*int(d.numOutput)+int(d.numOutput))%len(d.ytrain)
+func (d Data) Train(iterations int, ann goann.Network) goann.Network {
+	for ind, c := 0, 0; c < iterations; c++ {
+		index1, index2 := ind*int(d.numInput), ind*int(d.numInput)+int(d.numInput)
+		outdex1, outdex2 := ind*int(d.numOutput), ind*int(d.numOutput)+int(d.numOutput)
 		ann.PutData(d.xtrain[index1:index2])
 		ann.Propagation()
 		//fmt.Println(input, x.GetFinal())
 		ann.BackPropagation(d.ytrain[outdex1:outdex2])
 		ind++
-
+		if ind*int(d.numInput) >= len(d.xtrain) {
+			ind = 0
+		}
 	}
 
 	return ann
