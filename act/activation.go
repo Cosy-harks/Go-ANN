@@ -87,6 +87,7 @@ func (S Sigmoid) Derivative(y []float64) []float64 {
 // using a hard transition y = {0; x < 0, x; x >= 0}
 type ReLU struct{}
 
+// Act of Rectified Linear Unit gives max of (0, x)
 func (r ReLU) Act(x []float64) []float64 {
 	guess := make([]float64, len(x), len(x))
 	for i, y := range x {
@@ -99,6 +100,7 @@ func (r ReLU) Act(x []float64) []float64 {
 	return guess
 }
 
+// Derivative of Rectified Linear Unit give slope of (max(0, x)) == 0. || 1.
 func (r ReLU) Derivative(y []float64) []float64 {
 	v := make([]float64, len(y), len(y))
 	for i, y := range y {
