@@ -103,10 +103,10 @@ func (r ReLU) Derivative(y []float64) []float64 {
 	v := make([]float64, len(y), len(y))
 	for i, y := range y {
 		if y >= 0 {
-			guess[i] = 1.0
+			v[i] = 1.0
 		} else {
-			guess[i] = 0.0
+			v[i] = 0.0
 		}
 	}
-	return guess
+	return v
 }
