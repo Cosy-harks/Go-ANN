@@ -4,7 +4,7 @@ package dtm
 import (
 	"errors"
 
-	goann "github.com/Go-ANN"
+	goann "github.com/devgoann/Go-ANN"
 )
 
 // DataBuilder will be a central location for training and testing the network
@@ -67,7 +67,7 @@ func (db *DataBuilder) AddxTrainValues(xTrain []float64) error {
 // AddyTrainValues will add the parameter yTrain values to the db.ytrain slice
 // if db.numOutput is set and the length of yTrain mod db.numOutput is 0
 func (db *DataBuilder) AddyTrainValues(yTrain []float64) error {
-	if db.numOutput != 0 {
+	if db.numOutput == 0 {
 		return errors.New("Use SetNumOutput(int) before using this function")
 	}
 	if len(yTrain)%int(db.numOutput) != 0 {
@@ -131,16 +131,16 @@ func (db *DataBuilder) Build() Data {
 // iterations - length of training loop
 // batch - has yet to work
 // ann - the provided Network
-func (d Data) Train(iterations uint, ann goann.Network) goann.Network {
-	for ind, c := 0, 0; c < int(iterations); c++ {
-		index1, index2 := (ind*int(d.numInput))%len(d.xtrain), (ind*int(d.numInput)+int(d.numInput))%len(d.xtrain)
-		outdex1, outdex2 := (ind*int(d.numOutput))%len(d.ytrain), (ind*int(d.numOutput)+int(d.numOutput))%len(d.ytrain)
-		ann.PutData(d.xtrain[index1:index2])
-		ann.Propagation()
-		//fmt.Println(input, x.GetFinal())
-		ann.BackPropagation(d.ytrain[outdex1:outdex2])
-		ind++
-
+func (d Data) Train(epochs uint, ann goann.Network) goann.Network {
+	for c := 0; c < int(epochs); c++ {
+		for ind := 0; ind < len(d.xtrain)/int(d.numInput); ind++ {
+			index1, index2 := ind*int(d.numInput), ind*int(d.numInput)+int(d.numInput)
+			outdex1, outdex2 := ind*int(d.numOutput), ind*int(d.numOutput)+int(d.numOutput)
+			ann.PutData(d.xtrain[index1:index2])
+			ann.Propagation()
+			//fmt.Println(input, x.GetFinal())
+			ann.BackPropagation(d.ytrain[outdex1:outdex2])
+		}
 	}
 
 	return ann

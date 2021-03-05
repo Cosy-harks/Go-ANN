@@ -13,6 +13,10 @@ type layer struct {
 	inout []float64
 }
 
+func (l *layer) addNode() {
+	l.inout = append(l.inout, 0.0)
+}
+
 type weightedConnect struct {
 	inlayer  *layer
 	outlayer *layer
@@ -43,6 +47,33 @@ func (wc *weightedConnect) init() {
 			wc.weight[i][j] = rand.Float64()*2. - 1.
 		}
 		wc.bias[i] = rand.Float64()
+	}
+}
+
+// node added, need to update weights
+func (wc *weightedConnect) nodeAdded(outLayerIncreased bool, inLayerIncreased bool) {
+	if outLayerIncreased {
+		var countInlayer = len(wc.inlayer.inout)
+		var countOutlayer = len(wc.outlayer.inout)
+
+		wc.weight = append(wc.weight, make([]float64, countInlayer))
+		wc.batchWeightMod = append(wc.batchWeightMod, make([]float64, countInlayer))
+
+		wc.bias = append(wc.bias, (rand.Float64()*2. - 1.))
+		wc.batchBiasMod = append(wc.batchBiasMod, 0.0)
+
+		for i := 0; i < countInlayer; i++ {
+			wc.weight[countOutlayer-1][i] = rand.Float64()*2. - 1.
+		}
+	}
+
+	if inLayerIncreased {
+		var countOutlayer = len(wc.outlayer.inout)
+
+		for i := 0; i < countOutlayer; i++ {
+			wc.weight[i] = append(wc.weight[i], (rand.Float64()*2. - 1.))
+			wc.batchWeightMod[i] = append(wc.batchWeightMod[i], 0.0)
+		}
 	}
 }
 
@@ -193,6 +224,19 @@ func (n *Network) ConnectLayers() {
 		n.Connectors[i].outlayer = &n.Lays[i+1]
 		n.Connectors[i].init()
 	}
+}
+
+// AddNode increases the node count of specific
+func (n *Network) AddNode(layer int) {
+	n.Lays[layer].addNode() // .inout = append(n.Lays[layer].inout, 0.0)
+	// the subtracting of a node is going to be all in the weighted connections
+	// n.Lays[layer].inout = n.Lays[layer].inout[0:len(n.Lays[layer].inout)]
+	n.Connectors[layer-1].outlayer = &n.Lays[layer]
+	n.Connectors[layer].inlayer = &n.Lays[layer]
+	// add a row to the outlayer
+	n.Connectors[layer-1].nodeAdded(true, false)
+	// add a column to the inlayer
+	n.Connectors[layer].nodeAdded(false, true)
 }
 
 // Fillit provides random values, [0.0, 1.0), to input layer
