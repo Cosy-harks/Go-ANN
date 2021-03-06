@@ -4,7 +4,7 @@ package dtm
 import (
 	"errors"
 
-	goann "github.com/devgoann/Go-ANN"
+	goann "github.com/Go-ANN"
 )
 
 // DataBuilder will be a central location for training and testing the network
@@ -131,7 +131,6 @@ func (db *DataBuilder) Build() Data {
 // iterations - length of training loop
 // batch - has yet to work
 // ann - the provided Network
-<<<<<<< HEAD
 func (d Data) Train(epochs uint, ann goann.Network) goann.Network {
 	for c := 0; c < int(epochs); c++ {
 		for ind := 0; ind < len(d.xtrain)/int(d.numInput); ind++ {
@@ -141,19 +140,6 @@ func (d Data) Train(epochs uint, ann goann.Network) goann.Network {
 			ann.Propagation()
 			//fmt.Println(input, x.GetFinal())
 			ann.BackPropagation(d.ytrain[outdex1:outdex2])
-=======
-func (d Data) Train(iterations int, ann goann.Network) goann.Network {
-	for ind, c := 0, 0; c < iterations; c++ {
-		index1, index2 := ind*int(d.numInput), ind*int(d.numInput)+int(d.numInput)
-		outdex1, outdex2 := ind*int(d.numOutput), ind*int(d.numOutput)+int(d.numOutput)
-		ann.PutData(d.xtrain[index1:index2])
-		ann.Propagation()
-		//fmt.Println(input, x.GetFinal())
-		ann.BackPropagation(d.ytrain[outdex1:outdex2])
-		ind++
-		if ind*int(d.numInput) >= len(d.xtrain) {
-			ind = 0
->>>>>>> main
 		}
 	}
 
