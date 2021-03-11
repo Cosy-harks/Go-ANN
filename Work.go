@@ -202,11 +202,13 @@ func (wc *weightedConnect) addModValues(weightMod [][]float64, biasMod []float64
 type Network struct {
 	Lays       []layer
 	Connectors []weightedConnect
+	MetaData   Meta
 }
 
 func (n *Network) ctor() {
 	n.Lays = make([]layer, 0, 5)
 	n.Connectors = make([]weightedConnect, 0, 5)
+	n.MetaData.NodeCounts = make([]int, 0, 5)
 	fmt.Println("So I don't have to take fmt out of imports")
 }
 
@@ -214,6 +216,7 @@ func (n *Network) ctor() {
 // when layer gets to be one more than weight connections
 func (n *Network) AddLayer(a act.Activation, nodeCount uint) {
 	n.Lays = append(n.Lays, layer{a, make([]float64, nodeCount)})
+	n.MetaData.NodeCounts = append(n.MetaData.NodeCounts, int(nodeCount))
 }
 
 // ConnectLayers Makes all the weights based on the layers in the network
@@ -237,6 +240,7 @@ func (n *Network) AddNode(layer int) {
 	n.Connectors[layer-1].nodeAdded(true, false)
 	// add a column to the inlayer
 	n.Connectors[layer].nodeAdded(false, true)
+	n.MetaData.NodeCounts[layer]++
 }
 
 // Fillit provides random values, [0.0, 1.0), to input layer
@@ -305,4 +309,9 @@ func error(gs, ex []float64) []float64 {
 		ret[i] = gs[i] - ex[i]
 	}
 	return ret
+}
+
+// Meta describes the shape of the Network
+type Meta struct{
+	NodeCounts []int
 }
