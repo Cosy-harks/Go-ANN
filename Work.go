@@ -209,6 +209,7 @@ func (n *Network) ctor() {
 	n.Lays = make([]layer, 0, 5)
 	n.Connectors = make([]weightedConnect, 0, 5)
 	n.MetaData.NodeCounts = make([]int, 0, 5)
+	n.MetaData.Last = -1
 	fmt.Println("So I don't have to take fmt out of imports")
 }
 
@@ -217,6 +218,7 @@ func (n *Network) ctor() {
 func (n *Network) AddLayer(a act.Activation, nodeCount uint) {
 	n.Lays = append(n.Lays, layer{a, make([]float64, nodeCount)})
 	n.MetaData.NodeCounts = append(n.MetaData.NodeCounts, int(nodeCount))
+	n.MetaData.Last++
 }
 
 // ConnectLayers Makes all the weights based on the layers in the network
@@ -312,6 +314,7 @@ func error(gs, ex []float64) []float64 {
 }
 
 // Meta describes the shape of the Network
-type Meta struct{
+type Meta struct {
 	NodeCounts []int
+	Last       int
 }
