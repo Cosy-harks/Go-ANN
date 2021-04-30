@@ -1,13 +1,37 @@
 // Package act defines activation functions and the derivatives of them
 package act
 
-import "math"
+import (
+	"math"
+	"strings"
+)
 
 // Activation functions implemented
 // Linear   2
 // Sigmoid  3
 // ReLU     4
 // SoftSign 1
+
+//ActivationFactory takes the 'name' of the function to be used and returns the corresponding struct
+//Linear
+//sigmoid
+//ReLU
+//SoftSign
+//default is ReLU
+func ActivationFactory(method string) Activation {
+	switch strings.ToLower(method) {
+	case "linear":
+		return Linear{}
+	case "sigmoid":
+		return Sigmoid{}
+	case "relu":
+		return ReLU{}
+	case "softsign":
+		return SoftSign{}
+	default:
+		return ReLU{}
+	}
+}
 
 // Activation provides an interface to follow for making
 // different versions of activation methods
