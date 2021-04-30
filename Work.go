@@ -2,8 +2,10 @@
 package goann
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
 
 	"github.com/Go-ANN/act"
 )
@@ -83,12 +85,12 @@ func (wc *weightedConnect) propagate() {
 	// Matrix multiplication weight [][] * out [] + bias[]
 	//assign to next layer
 	/*
-	   _			_       _	_ _									_
-	   |a00 a01 a02| _	  _ |c00| |a00*b00 + a01*b10 + a02*b20 + c00|
+	   _		   _	   _   _ _								   _
+	   |a00 a01 a02| _	 _ |c00| |a00*b00 + a01*b10 + a02*b20 + c00|
 	   |a10 a11 a12| |b00| |c10| |a10*b00 + a11*b10 + a12*b20 + c10|
 	   |a20 a21 a22|*|b10|+|c20|=|a20*b00 + a21*b10 + a22*b20 + c20|
 	   |a30 a31 a32| |b20| |c30| |a30*b00 + a31*b10 + a32*b20 + c30|
-	   _			_ _	  _	_	_ _									_
+	   _		   _ _	 _ _   _ _								   _
 
 	*/
 	//fmt.Println("input Pre-act", wc.inlayer.inout)
@@ -296,6 +298,89 @@ func (n *Network) BackPropagation(expected []float64) {
 			terr[j] *= der[j]
 		}
 	}
+}
+
+//Save Network to as a JSON file
+func (n *Network) SaveJSON(filepath, filename string) (bytecount int) {
+	file, err := os.Create(filepath + filename)
+	defer file.Close()
+
+	//var tempStr string
+	var tempbytes []byte
+
+	if err != nil {
+		return 0
+	}
+
+	file.WriteString("\"This is Still in testing.\":\"true\"\n")
+	bytecount += len("\"This is Still in testing.\":\"true\"\n")
+
+	file.WriteString("\"Network\":{\n")
+	bytecount += len("\"Network\":{\n")
+
+	// The shape of the Network
+	file.WriteString("\t\"Structure\":")
+	bytecount += len("\t\"Structure\":")
+
+	tempbytes, err = json.Marshal(n.MetaData.NodeCounts)
+	bytecount += len(tempbytes)
+	file.Write(tempbytes)
+
+	// weight values that reside between the layers
+	file.WriteString(",\n\t\"weight\":[")
+	bytecount += len(",\n\t\"weight\":[")
+
+	for i := 0; i < n.MetaData.Last-1; i++ {
+		tempbytes, err = json.Marshal(n.Connectors[i].weight)
+		bytecount += len(tempbytes)
+		file.Write(tempbytes)
+
+		if i != n.MetaData.Last-2 {
+			// Look a little nicer
+			file.Write([]byte{',', '\n', '\t', '\t'})
+			bytecount += 4
+		}
+	}
+
+	file.Write([]byte{']'})
+	bytecount += 1
+
+	file.WriteString(",\n\t\"bias\":[")
+	bytecount += len(",\n\t\"bias\":[")
+
+	for i := 0; i < n.MetaData.Last-1; i++ {
+		tempbytes, err = json.Marshal(n.Connectors[i].bias)
+		bytecount += len(tempbytes)
+		file.Write(tempbytes)
+		if i != n.MetaData.Last-2 {
+			file.Write([]byte{',', '\n', '\t', '\t'})
+			bytecount += 4
+		}
+	}
+
+	file.Write([]byte{']'})
+	bytecount += 1
+
+	// Tells what each Layers activation function is called
+	file.WriteString(",\n\t\"LayerActivation\":[")
+	bytecount += len(",\n\t\"LayerActivation\":[")
+
+	for i, v := range n.Lays {
+		str := "\"" + v.style.ToString() + "\""
+		if i != 0 {
+			str = "," + str
+		}
+		file.WriteString(str)
+		bytecount += len(str)
+	}
+
+	file.Write([]byte{']', '\n'})
+	bytecount += 1
+
+	file.Write([]byte{'}'})
+	bytecount += 1
+
+	return bytecount
 }
 
 func costSqErr(err []float64) []float64 {
