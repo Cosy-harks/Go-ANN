@@ -1,5 +1,5 @@
 # Go-ANN
-An artificial neural network builder and trainer. Does not save an build network as of yet.
+An artificial neural network builder and trainer. Does not save a built network as of yet.
 
 Net.go will allow multiple layers of nodes
 Each layer gets a type of activation function and a number of nodes
