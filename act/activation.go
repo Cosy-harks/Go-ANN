@@ -14,12 +14,17 @@ import "math"
 type Activation interface {
 	Act([]float64) []float64
 	Derivative([]float64) []float64
+	ToString() string
 }
 
 // SoftSign implements the activation interface
 // using f(x) = x/(1 + |x|)
 // It is tanh like (~-1.0?, ~+1.0?)
 type SoftSign struct{}
+
+func (s SoftSign) ToString() string {
+	return "SoftSign"
+}
 
 // Act of SoftSign makes a smooth transition (-1, 1)
 func (s SoftSign) Act(x []float64) []float64 {
@@ -43,6 +48,10 @@ func (s SoftSign) Derivative(y []float64) []float64 {
 // using a linear function
 type Linear struct{}
 
+func (l Linear) ToString() string {
+	return "Linear"
+}
+
 // Act of Linear technically doesn't change the input data, but does return it.
 func (l Linear) Act(x []float64) []float64 {
 	guess := make([]float64, len(x), len(x))
@@ -65,6 +74,10 @@ func (l Linear) Derivative(x []float64) []float64 {
 // using a smooth transition (0, 1)
 type Sigmoid struct{}
 
+func (S Sigmoid) ToString() string {
+	return "Sigmoid"
+}
+
 // Act on x suchthat y = 1/(1+e^-x))
 func (S Sigmoid) Act(x []float64) []float64 {
 	guess := make([]float64, len(x), len(x))
@@ -86,6 +99,10 @@ func (S Sigmoid) Derivative(y []float64) []float64 {
 // ReLU implments the activation interface
 // using a hard transition y = {0; x < 0, x; x >= 0}
 type ReLU struct{}
+
+func (r ReLU) ToString() string {
+	return "ReLU"
+}
 
 // Act of Rectified Linear Unit gives max of (0, x)
 func (r ReLU) Act(x []float64) []float64 {
