@@ -19,6 +19,10 @@ func (l *layer) addNode() {
 	l.inout = append(l.inout, 0.0)
 }
 
+func (l *layer) removeNode() {
+	l.inout = l.inout[:len(l.inout)-1]
+}
+
 type weightedConnect struct {
 	inlayer  *layer
 	outlayer *layer
@@ -32,6 +36,8 @@ type weightedConnect struct {
 // init
 //inlayer | weights | outlayer
 // [out][in] * [in] + [out]
+//First indicies go to different nodes
+//Second indicies go to same node
 func (wc *weightedConnect) init() {
 	wc.weight = make([][]float64, len(wc.outlayer.inout))
 	wc.batchWeightMod = make([][]float64, len(wc.outlayer.inout))
@@ -75,6 +81,37 @@ func (wc *weightedConnect) nodeAdded(outLayerIncreased bool, inLayerIncreased bo
 		for i := 0; i < countOutlayer; i++ {
 			wc.weight[i] = append(wc.weight[i], (rand.Float64()*2. - 1.))
 			wc.batchWeightMod[i] = append(wc.batchWeightMod[i], 0.0)
+		}
+	}
+}
+
+////////////////////////////
+//  NEEDS WORK & TESTING  //
+////////////////////////////
+func (wc *weightedConnect) nodeRemoved(outLayerDecreased, inLayerDecreased bool, node int) {
+	//Might be working
+	if outLayerDecreased && node < len(wc.weight) {
+		//var countInlayer = len(wc.inlayer.inout)
+		//var countOutlayer = len(wc.outlayer.inout)
+
+		var weightSliceL = wc.weight[:node]
+		var weightSliceR = wc.weight[node+1:]
+
+		wc.weight = append(weightSliceL, weightSliceR...)
+		wc.batchWeightMod = wc.batchWeightMod[1:]
+
+		wc.bias = append(wc.bias[:node], wc.bias[node+1:]...)
+		wc.batchBiasMod = wc.batchBiasMod[1:]
+
+	}
+
+	if inLayerDecreased && node < len(wc.weight[0]) {
+		var countInlayer = len(wc.inlayer.inout)
+		var countOutlayer = len(wc.outlayer.inout)
+
+		for i := 0; i < countOutlayer; i++ {
+			wc.weight[i] = append(wc.weight[i][:node], wc.weight[i][node+1:countInlayer]...)
+			wc.batchWeightMod[i] = wc.batchWeightMod[i][1:]
 		}
 	}
 }
@@ -199,6 +236,11 @@ func (wc *weightedConnect) addModValues(weightMod [][]float64, biasMod []float64
 	}
 }
 
+//GetWeight values
+func (wc *weightedConnect) GetWeight() [][]float64 {
+	return wc.weight
+}
+
 // Network builds up the layers of the network
 //then connects all the layers
 type Network struct {
@@ -235,16 +277,43 @@ func (n *Network) ConnectLayers() {
 
 // AddNode increases the node count of specific
 func (n *Network) AddNode(layer int) {
+	l, z := n.MetaData.Last, 0
 	n.Lays[layer].addNode() // .inout = append(n.Lays[layer].inout, 0.0)
 	// the subtracting of a node is going to be all in the weighted connections
 	// n.Lays[layer].inout = n.Lays[layer].inout[0:len(n.Lays[layer].inout)]
-	n.Connectors[layer-1].outlayer = &n.Lays[layer]
-	n.Connectors[layer].inlayer = &n.Lays[layer]
+	if layer != z {
+		n.Connectors[layer-1].outlayer = &n.Lays[layer]
+	}
+	if layer != l {
+		n.Connectors[layer].inlayer = &n.Lays[layer]
+	}
 	// add a row to the outlayer
 	n.Connectors[layer-1].nodeAdded(true, false)
 	// add a column to the inlayer
 	n.Connectors[layer].nodeAdded(false, true)
 	n.MetaData.NodeCounts[layer]++
+}
+
+// RemoveNode decreases the node count of specific Layer
+func (n *Network) RemoveNode(layer, node int) {
+	l, z := n.MetaData.Last, 0 // .inout = append(n.Lays[layer].inout, 0.0)
+	// the subtracting of a node is going to be all in the weighted connections
+	// n.Lays[layer].inout = n.Lays[layer].inout[0:len(n.Lays[layer].inout)]
+
+	// These may not be needed
+	if layer != z {
+		n.Connectors[layer-1].outlayer = &n.Lays[layer]
+	}
+	if layer != l {
+		n.Connectors[layer].inlayer = &n.Lays[layer]
+	}
+
+	// add a row to the outlayer
+	n.Connectors[layer-1].nodeRemoved(true, false, node)
+	// add a column to the inlayer
+	n.Connectors[layer].nodeRemoved(false, true, node)
+	n.MetaData.NodeCounts[layer]--
+	n.Lays[layer].removeNode()
 }
 
 // Fillit provides random values, [0.0, 1.0), to input layer
