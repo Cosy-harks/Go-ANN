@@ -15,7 +15,7 @@ type Layer struct {
 //SetInout error if lengths are missmatched
 func (l *Layer) SetInout(ace []float64) error {
 	if len(ace) != len(l.Inout) {
-		return errors.New("Missmatched lengths")
+		return errors.New("missmatched lengths")
 	}
 	for i := 0; i < len(ace); i++ {
 		l.Inout[i] = ace[i]
