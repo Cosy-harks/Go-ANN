@@ -240,6 +240,7 @@ func (wc *weightedConnect) addModValues(weightMod [][]float64, biasMod []float64
 func (wc *weightedConnect) GetWeight() [][]float64 {
 	var copied [][]float64 = make([][]float64, len(wc.weight))
 	for i := 0; i < len(wc.weight); i++ {
+		copied[i] = make([]float64, len(wc.weight[i]))
 		copy(copied[i], wc.weight[i])
 	}
 	return copied
