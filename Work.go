@@ -141,7 +141,7 @@ func (wc *weightedConnect) propagate() {
 }
 
 func (wc *weightedConnect) mathy() []float64 {
-	guess := make([]float64, len(wc.outlayer.inout), len(wc.outlayer.inout))
+	guess := make([]float64, len(wc.outlayer.inout))
 	for i, v := range wc.weight {
 		for j, w := range v {
 			// seems to be assigning properly
@@ -155,19 +155,19 @@ func (wc *weightedConnect) mathy() []float64 {
 func (wc *weightedConnect) brakagate(outDer []float64) []float64 {
 
 	//fmt.Println("1")
-	weightMod := make([][]float64, len(wc.weight))
-	biasMod := make([]float64, len(outDer))
+	//weightMod := make([][]float64, len(wc.weight))
+	//biasMod := make([]float64, len(outDer))
 
-	weightMod = wc.midDirivative(outDer)
-	biasMod = wc.biasDirivative(outDer)
+	weightMod := wc.midDirivative(outDer)
+	biasMod := wc.biasDirivative(outDer)
 
 	//inDerivative
 	//fmt.Println("3")
-	inDer := make([]float64, len(wc.inlayer.inout), len(wc.inlayer.inout))
+	//inDer := make([]float64, len(wc.inlayer.inout))
 	//fmt.Printf("weight size: %vx%v | ", len(wc.weight),len(wc.weight[0]))
 	//fmt.Println("l(wc.in.io): ", len(wc.inlayer.inout))
 
-	inDer = wc.inDerivative(weightMod)
+	inDer := wc.inDerivative(weightMod)
 
 	//Weight modifier
 	wc.addModValues(weightMod, biasMod)
@@ -204,7 +204,7 @@ func (wc *weightedConnect) biasDirivative(outDer []float64) []float64 {
 
 // inDerivative will create a slice to pass to the next brakagate
 func (wc *weightedConnect) inDerivative(weightMod [][]float64) []float64 {
-	inDer := make([]float64, len(wc.inlayer.inout), len(wc.inlayer.inout))
+	inDer := make([]float64, len(wc.inlayer.inout))
 	//fmt.Printf("weight size: %vx%v | ", len(wc.weight),len(wc.weight[0]))
 	//fmt.Println("l(wc.in.io): ", len(wc.inlayer.inout))
 
@@ -238,7 +238,11 @@ func (wc *weightedConnect) addModValues(weightMod [][]float64, biasMod []float64
 
 //GetWeight values
 func (wc *weightedConnect) GetWeight() [][]float64 {
-	return wc.weight
+	var copied [][]float64 = make([][]float64, len(wc.weight))
+	for i := 0; i < len(wc.weight); i++ {
+		copy(copied[i], wc.weight[i])
+	}
+	return copied
 }
 
 // Network builds up the layers of the network
@@ -249,13 +253,13 @@ type Network struct {
 	MetaData   Meta
 }
 
-func (n *Network) ctor() {
+/* func (n *Network) ctor() {
 	n.Lays = make([]layer, 0, 5)
 	n.Connectors = make([]weightedConnect, 0, 5)
 	n.MetaData.NodeCounts = make([]int, 0, 5)
 	n.MetaData.Last = -1
 	fmt.Println("So I don't have to take fmt out of imports")
-}
+} */
 
 // AddLayer adds a layer of nodes and a weight connection
 // when layer gets to be one more than weight connections
@@ -352,9 +356,9 @@ func (n *Network) BackPropagation(expected []float64) {
 	guess := n.GetFinal()
 	err := error(guess, expected)
 	//cost := costSqErr(err)
-	terr := make([]float64, len(err))
+	//terr := make([]float64, len(err))
 
-	terr = n.Connectors[len(n.Connectors)-1].outlayer.style.Derivative(guess)
+	terr := n.Connectors[len(n.Connectors)-1].outlayer.style.Derivative(guess)
 
 	for i, v := range err {
 		terr[i] *= 2. * v
@@ -372,6 +376,9 @@ func (n *Network) BackPropagation(expected []float64) {
 //Save Network to as a JSON file
 func (n *Network) SaveJSON(filepath, filename string) (bytecount int) {
 	file, err := os.Create(filepath + filename)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	defer file.Close()
 
 	//var tempStr string
@@ -392,6 +399,9 @@ func (n *Network) SaveJSON(filepath, filename string) (bytecount int) {
 	bytecount += len("\t\"Structure\":")
 
 	tempbytes, err = json.Marshal(n.MetaData.NodeCounts)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	bytecount += len(tempbytes)
 	file.Write(tempbytes)
 
@@ -401,6 +411,10 @@ func (n *Network) SaveJSON(filepath, filename string) (bytecount int) {
 
 	for i := 0; i < n.MetaData.Last-1; i++ {
 		tempbytes, err = json.Marshal(n.Connectors[i].weight)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
 		bytecount += len(tempbytes)
 		file.Write(tempbytes)
 
@@ -419,6 +433,10 @@ func (n *Network) SaveJSON(filepath, filename string) (bytecount int) {
 
 	for i := 0; i < n.MetaData.Last-1; i++ {
 		tempbytes, err = json.Marshal(n.Connectors[i].bias)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
 		bytecount += len(tempbytes)
 		file.Write(tempbytes)
 		if i != n.MetaData.Last-2 {

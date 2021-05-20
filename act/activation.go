@@ -52,7 +52,7 @@ func (s SoftSign) ToString() string {
 
 // Act of SoftSign makes a smooth transition (-1, 1)
 func (s SoftSign) Act(x []float64) []float64 {
-	guess := make([]float64, len(x), len(x))
+	guess := make([]float64, len(x))
 	for i, x := range x {
 		guess[i] = x / (1.0 + math.Abs(x))
 	}
@@ -61,7 +61,7 @@ func (s SoftSign) Act(x []float64) []float64 {
 
 // Derivative of SoftSign makes a smooth transition (-1, 1)
 func (s SoftSign) Derivative(y []float64) []float64 {
-	v := make([]float64, len(y), len(y))
+	v := make([]float64, len(y))
 	for i, y := range y {
 		v[i] = math.Pow(1.0/(1.0+math.Abs(y)), 2.0)
 	}
@@ -78,16 +78,14 @@ func (l Linear) ToString() string {
 
 // Act of Linear technically doesn't change the input data, but does return it.
 func (l Linear) Act(x []float64) []float64 {
-	guess := make([]float64, len(x), len(x))
-	for i, v := range x {
-		guess[i] = v
-	}
+	guess := make([]float64, len(x))
+	copy(guess, x)
 	return guess
 }
 
 // Derivative of Linear returns the scalar of the linear function. 1.0
 func (l Linear) Derivative(x []float64) []float64 {
-	v := make([]float64, len(x), len(x))
+	v := make([]float64, len(x))
 	for i := range x {
 		v[i] = 1.0
 	}
@@ -104,7 +102,7 @@ func (S Sigmoid) ToString() string {
 
 // Act on x suchthat y = 1/(1+e^-x))
 func (S Sigmoid) Act(x []float64) []float64 {
-	guess := make([]float64, len(x), len(x))
+	guess := make([]float64, len(x))
 	for i, v := range x {
 		guess[i] = (1. / (1. + math.Pow(math.E, -v)))
 	}
@@ -113,7 +111,7 @@ func (S Sigmoid) Act(x []float64) []float64 {
 
 // Derivative on y suchthat y` = y(1. - y)
 func (S Sigmoid) Derivative(y []float64) []float64 {
-	v := make([]float64, len(y), len(y))
+	v := make([]float64, len(y))
 	for i, y := range y {
 		v[i] = y * (1. - y)
 	}
@@ -130,7 +128,7 @@ func (r ReLU) ToString() string {
 
 // Act of Rectified Linear Unit gives max of (0, x)
 func (r ReLU) Act(x []float64) []float64 {
-	guess := make([]float64, len(x), len(x))
+	guess := make([]float64, len(x))
 	for i, y := range x {
 		if y >= 0 {
 			guess[i] = y
@@ -143,7 +141,7 @@ func (r ReLU) Act(x []float64) []float64 {
 
 // Derivative of Rectified Linear Unit give slope of (max(0, x)) == 0. || 1.
 func (r ReLU) Derivative(y []float64) []float64 {
-	v := make([]float64, len(y), len(y))
+	v := make([]float64, len(y))
 	for i, y := range y {
 		if y >= 0 {
 			v[i] = 1.0
