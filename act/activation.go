@@ -35,8 +35,13 @@ func ActivationFactory(method string) Activation {
 
 // Activation provides an interface to follow for making
 // different versions of activation methods
+// Act([]float64) gets y in terms of x
+// Derivative([]float64) gets y' in terms of y
+// ToString() return struct name
 type Activation interface {
+	// y in terms of x
 	Act([]float64) []float64
+	// y' in terms of y
 	Derivative([]float64) []float64
 	ToString() string
 }
@@ -59,17 +64,24 @@ func (s SoftSign) Act(x []float64) []float64 {
 	return guess
 }
 
-// Derivative of SoftSign makes a smooth transition (-1, 1)
+// Derivative of SoftSign in terms of y
 func (s SoftSign) Derivative(y []float64) []float64 {
 	v := make([]float64, len(y))
 	for i, y := range y {
-		v[i] = math.Pow(1.0/(1.0+math.Abs(y)), 2.0)
+		var a float64
+		if y <= 0 {
+			a = -(y / (y - 1))
+		} else {
+			a = y / (y + 1)
+		}
+		v[i] = math.Pow(1.0/(1.0+math.Abs(a)), 2.0)
 	}
 	return v
 }
 
 // Linear implements the activation interface
-// using a linear function
+// using a linear function y = x
+// could technically use a coefficient
 type Linear struct{}
 
 func (l Linear) ToString() string {
@@ -84,9 +96,9 @@ func (l Linear) Act(x []float64) []float64 {
 }
 
 // Derivative of Linear returns the scalar of the linear function. 1.0
-func (l Linear) Derivative(x []float64) []float64 {
-	v := make([]float64, len(x))
-	for i := range x {
+func (l Linear) Derivative(y []float64) []float64 {
+	v := make([]float64, len(y))
+	for i := range y {
 		v[i] = 1.0
 	}
 	return v
@@ -143,7 +155,7 @@ func (r ReLU) Act(x []float64) []float64 {
 func (r ReLU) Derivative(y []float64) []float64 {
 	v := make([]float64, len(y))
 	for i, y := range y {
-		if y >= 0 {
+		if y > 0 {
 			v[i] = 1.0
 		} else {
 			v[i] = 0.0
